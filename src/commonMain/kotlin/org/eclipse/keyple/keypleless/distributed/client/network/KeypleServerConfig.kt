@@ -18,7 +18,6 @@ data class KeypleServerConfig(
     val port: Int,
     val endpoint: String,
     val logLevel: LogLevel = LogLevel.NONE,
-    // TODO: authent
     val basicAuth: String? = null,
 ) {
   fun baseUrl() = "${host}:${port}"

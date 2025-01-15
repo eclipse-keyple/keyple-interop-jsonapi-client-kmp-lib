@@ -16,40 +16,44 @@ package org.eclipse.keyple.keypleless.distributed.client.protocol
 import io.github.aakira.napier.Napier
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import org.eclipse.keyple.keypleless.distributed.client.network.KeypleServer
 import org.eclipse.keyple.keypleless.distributed.client.network.KeypleServerConfig
+import org.eclipse.keyple.keypleless.distributed.client.network.SimpleHttpNetworkClient
+import org.eclipse.keyple.keypleless.distributed.client.spi.SyncNetworkClient
 import org.eclipse.keyple.keypleless.distributed.client.network.buildHttpClient
 import org.eclipse.keyple.keypleless.reader.nfcmobile.*
 
-private const val TAG = "KeypleRemoteService"
+private const val TAG = "KeypleTerminal"
 
-// TODO rename maybe into KeypleAgent?
-class KeypleRemoteService(
+class KeypleTerminal(
     localNfcReader: LocalNfcReader,
-    val clientId: String,
-    config: KeypleServerConfig
+    private val clientId: String,
+    private val networkClient: SyncNetworkClient
 ) {
+
+  constructor(
+      localNfcReader: LocalNfcReader,
+      clientId: String,
+      config: KeypleServerConfig
+  ) : this(
+      localNfcReader, clientId, SimpleHttpNetworkClient(config, buildHttpClient(config.logLevel)))
 
   private val reader = MultiplatformReader(localNfcReader)
 
-  @OptIn(ExperimentalSerializationApi::class)
   private val json = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true
     explicitNulls = false
   }
 
+  private val messageProcessor = MessageProcessor(json)
+
   fun setScanMessage(msg: String) {
     reader.setScanMessage(msg)
   }
-
-  private val server = KeypleServer(config, buildHttpClient(config.logLevel))
-  private val messageProcessor = MessageProcessor(json)
 
   suspend fun waitForCard(): Boolean {
     return reader.waitForCardPresent()
@@ -88,7 +92,7 @@ class KeypleRemoteService(
         )
 
     try {
-      var serverResponse = server.transmitRequest(request)
+      var serverResponse = networkClient.sendRequest(request)[0]
 
       while (serverResponse.action != END_REMOTE_SERVICE) {
         Napier.d(tag = TAG, message = "Processing action ${serverResponse.action}")
@@ -116,7 +120,7 @@ class KeypleRemoteService(
                 action = RESP,
                 body = deviceAnswer,
             )
-        serverResponse = server.transmitRequest(message)
+        serverResponse = networkClient.sendRequest(message)[0]
       }
 
       val jsonElement = json.parseToJsonElement(serverResponse.body)
@@ -256,11 +260,9 @@ class KeypleRemoteService(
   private suspend fun processApduRequest(apduRequest: ApduRequest): ApduResponse {
     val apdu = reader.transmitApdu(apduRequest.apdu.hexToByteArray())
 
-    // TODO why is this a special case?
     if (apdu.size == 2) {
-      val request = messageProcessor.createRequest(apdu, apduRequest)
-      if (request != null) {
-        return processApduRequest(request)
+      messageProcessor.createRequest(apdu, apduRequest)?.let {
+        return processApduRequest(it)
       }
     }
 
