@@ -11,6 +11,7 @@
  ************************************************************************************** */
 package org.eclipse.keyple.keypleless.distributed.client.spi
 
+import kotlin.coroutines.cancellation.CancellationException
 import org.eclipse.keyple.keypleless.distributed.client.protocol.MessageDTO
 
 class ServerIOException(override val message: String) : Exception(message)
@@ -22,12 +23,14 @@ class ServerIOException(override val message: String) : Exception(message)
  * interface and implement your own authentication logics.
  */
 abstract class SyncNetworkClient {
+
   /**
    * Actual method to transmit the MessageDTO payload to the server, and retrieve back the next
    * MessageDTO the server asks us to process. You must throw a ServerIOException in case of errors.
    *
    * @throws ServerIOException
+   * @throws CancellationException
    */
-  @Throws(ServerIOException::class)
+  @Throws(ServerIOException::class, CancellationException::class)
   abstract suspend fun sendRequest(message: MessageDTO): List<MessageDTO>
 }

@@ -22,26 +22,26 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.eclipse.keyple.keypleless.distributed.client.network.KeypleServerConfig
 import org.eclipse.keyple.keypleless.distributed.client.network.SimpleHttpNetworkClient
-import org.eclipse.keyple.keypleless.distributed.client.spi.SyncNetworkClient
 import org.eclipse.keyple.keypleless.distributed.client.network.buildHttpClient
-import org.eclipse.keyple.keypleless.reader.nfcmobile.*
+import org.eclipse.keyple.keypleless.distributed.client.spi.CardIOException
+import org.eclipse.keyple.keypleless.distributed.client.spi.LocalReaderSpi
+import org.eclipse.keyple.keypleless.distributed.client.spi.ReaderIOException
+import org.eclipse.keyple.keypleless.distributed.client.spi.SyncNetworkClient
 
 private const val TAG = "KeypleTerminal"
 
 class KeypleTerminal(
-    localNfcReader: LocalNfcReader,
+    private val reader: LocalReaderSpi,
     private val clientId: String,
     private val networkClient: SyncNetworkClient
 ) {
 
   constructor(
-      localNfcReader: LocalNfcReader,
+      localNfcReader: LocalReaderSpi,
       clientId: String,
       config: KeypleServerConfig
   ) : this(
       localNfcReader, clientId, SimpleHttpNetworkClient(config, buildHttpClient(config.logLevel)))
-
-  private val reader = MultiplatformReader(localNfcReader)
 
   private val json = Json {
     ignoreUnknownKeys = true
@@ -274,3 +274,5 @@ class KeypleTerminal(
     reader.release()
   }
 }
+
+class UnexpectedStatusWordException(message: String) : Exception(message)

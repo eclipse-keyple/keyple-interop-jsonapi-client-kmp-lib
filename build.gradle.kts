@@ -35,9 +35,6 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-
-            api(libs.keypleless.reader.nfcmobile.kmp.lib)
-
             implementation(libs.kotlinx.coroutines)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization)
@@ -48,7 +45,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
 
-            api(libs.napier)
+            implementation(libs.napier)
         }
 
         androidMain.dependencies {
