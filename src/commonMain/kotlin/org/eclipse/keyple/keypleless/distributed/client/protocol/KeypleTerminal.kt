@@ -20,29 +20,18 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import org.eclipse.keyple.keypleless.distributed.client.network.KeypleServerConfig
-import org.eclipse.keyple.keypleless.distributed.client.network.SimpleHttpNetworkClient
-import org.eclipse.keyple.keypleless.distributed.client.network.buildHttpClient
 import org.eclipse.keyple.keypleless.distributed.client.spi.CardIOException
-import org.eclipse.keyple.keypleless.distributed.client.spi.LocalReaderSpi
+import org.eclipse.keyple.keypleless.distributed.client.spi.LocalReader
 import org.eclipse.keyple.keypleless.distributed.client.spi.ReaderIOException
 import org.eclipse.keyple.keypleless.distributed.client.spi.SyncNetworkClient
 
 private const val TAG = "KeypleTerminal"
 
 class KeypleTerminal(
-    private val reader: LocalReaderSpi,
+    private val reader: LocalReader,
     private val clientId: String,
     private val networkClient: SyncNetworkClient
 ) {
-
-  constructor(
-      localNfcReader: LocalReaderSpi,
-      clientId: String,
-      config: KeypleServerConfig
-  ) : this(
-      localNfcReader, clientId, SimpleHttpNetworkClient(config, buildHttpClient(config.logLevel)))
-
   private val json = Json {
     ignoreUnknownKeys = true
     encodeDefaults = true

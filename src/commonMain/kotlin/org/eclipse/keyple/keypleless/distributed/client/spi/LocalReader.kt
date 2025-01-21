@@ -20,36 +20,36 @@ class CardIOException(message: String) : Exception(message)
  * iOS, Android and JVM based desktops using a PCSC reader (Windows, macOS, linux). You can provide
  * your own version or support different hardware by implementing this interface.
  */
-abstract class LocalReaderSpi {
-  abstract fun name(): String
+interface LocalReader {
+  fun name(): String
 
   /**
    * Used to set the scan instructions to the user, for applicable NFC readers. Main usage is for
    * iOS: the provided msg is displayed in the iOS system-driven NFC popup
    */
-  abstract fun setScanMessage(msg: String)
+  fun setScanMessage(msg: String)
 
   /** @throws ReaderIOException on IO error communicating with the reader (USB unplugged, etc.) */
-  abstract suspend fun waitForCardPresent(): Boolean
+  suspend fun waitForCardPresent(): Boolean
 
   /** @throws ReaderIOException on IO error communicating with the reader (USB unplugged, etc.) */
-  abstract suspend fun startCardDetection(onCardFound: () -> Unit)
+  suspend fun startCardDetection(onCardFound: () -> Unit)
 
   /**
    * @throws ReaderIOException on IO error communicating with the reader (USB unplugged, etc.)
    * @throws CardIOException on IO error with the card (card exited the NFC field, etc.)
    */
-  abstract suspend fun openPhysicalChannel()
+  suspend fun openPhysicalChannel()
 
-  abstract fun closePhysicalChannel()
+  fun closePhysicalChannel()
 
-  abstract fun getPowerOnData(): String
+  fun getPowerOnData(): String
 
   /**
    * @throws ReaderIOException on IO error communicating with the reader (USB unplugged, etc.)
    * @throws CardIOException on IO error with the card (card exited the NFC field, etc.)
    */
-  abstract suspend fun transmitApdu(commandApdu: ByteArray): ByteArray
+  suspend fun transmitApdu(commandApdu: ByteArray): ByteArray
 
-  abstract fun release()
+  fun release()
 }

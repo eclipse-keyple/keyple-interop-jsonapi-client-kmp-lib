@@ -22,7 +22,7 @@ class ServerIOException(override val message: String) : Exception(message)
  * supports basic auth). If you have more constraints, for authentication for example, use this
  * interface and implement your own authentication logics.
  */
-abstract class SyncNetworkClient {
+interface SyncNetworkClient {
 
   /**
    * Actual method to transmit the MessageDTO payload to the server, and retrieve back the next
@@ -32,5 +32,5 @@ abstract class SyncNetworkClient {
    * @throws CancellationException
    */
   @Throws(ServerIOException::class, CancellationException::class)
-  abstract suspend fun sendRequest(message: MessageDTO): List<MessageDTO>
+  suspend fun sendRequest(message: MessageDTO): List<MessageDTO>
 }
