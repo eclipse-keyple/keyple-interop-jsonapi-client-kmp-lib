@@ -31,7 +31,7 @@ kotlin {
           }
         }
   }
-  androidTarget { publishLibraryVariants("release", "debug") }
+  androidTarget { publishLibraryVariants("release") }
   jvm { kotlin { jvmToolchain(libs.versions.jdk.get().toInt()) } }
   sourceSets {
     commonMain.dependencies {
@@ -108,12 +108,7 @@ tasks {
           buildString {
             appendLine("# Module $title")
             appendLine()
-            appendLine(
-                file("src/main/kdoc/overview.md")
-                    .takeIf { it.exists() }
-                    ?.readText()
-                    .orEmpty()
-                    .trim())
+            appendLine(file("overview.md").takeIf { it.exists() }?.readText().orEmpty().trim())
             appendLine()
             appendLine("<br>")
             appendLine()
@@ -136,41 +131,18 @@ tasks {
     dependsOn(dokkaHtml)
     archiveClassifier.set("javadoc")
     from(dokkaHtml.get().outputDirectory)
-  } /*
-    withType<Jar>().configureEach {
-      if (archiveClassifier.get() == "sources") {
-        doFirst { copyLicenseFiles() }
-        manifest {
-          attributes(
-              mapOf(
-                  "Implementation-Title" to "$title Sources",
-                  "Implementation-Version" to project.version))
-        }
-      }
+  }
+}
+
+afterEvaluate {
+  tasks.withType<Jar>().configureEach {
+    from(layout.buildDirectory.dir("resources/main"))
+    doFirst { copyLicenseFiles() }
+    manifest {
+      attributes(
+          mapOf("Implementation-Title" to title, "Implementation-Version" to project.version))
     }
-    named<org.gradle.jvm.tasks.Jar>("sourcesJar") {
-      from(layout.buildDirectory.dir("resources/main"))
-      doFirst { copyLicenseFiles() }
-      manifest {
-        attributes(
-            mapOf(
-                "Implementation-Title" to "$title Documentation",
-                "Implementation-Version" to project.version))
-      }
-    }
-    register<Jar>("javadocJar") {
-      dependsOn(dokkaHtml)
-      archiveClassifier.set("javadoc")
-      from(dokkaHtml.flatMap { it.outputDirectory })
-      from(layout.buildDirectory.dir("resources/main"))
-      doFirst { copyLicenseFiles() }
-      manifest {
-        attributes(
-            mapOf(
-                "Implementation-Title" to "$title Documentation",
-                "Implementation-Version" to project.version))
-      }
-    }*/
+  }
 }
 
 publishing {
