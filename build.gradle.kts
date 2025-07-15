@@ -207,6 +207,6 @@ publishing {
 signing {
   if (project.hasProperty("releaseTag")) {
     useGpgCmd()
-    sign(publishing.publications["mavenJava"])
+    publishing.publications.withType<MavenPublication>().forEach { sign(it) }
   }
 }
