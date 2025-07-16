@@ -1,3 +1,3 @@
 | Version | Documents |
 |:---:|---|
-| 0.1.6-SNAPSHOT | [API documentation](0.1.6-SNAPSHOT) |
+| **0.1.6 (latest stable)** | [API documentation](latest-stable) |
